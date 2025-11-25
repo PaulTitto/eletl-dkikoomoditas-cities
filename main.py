@@ -1,4 +1,5 @@
 import json
+import time
 
 import pandas as pd
 import requests
@@ -14,6 +15,15 @@ CITIES_MAP = {
     1: "Jakarta Barat"
 }
 
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Language": "en-US,en;q=0.9,id;q=0.8",
+    "Referer": "https://infopangan.jakarta.go.id/harga-pangan",
+    "Origin": "https://infopangan.jakarta.go.id",
+    "Connection": "keep-alive"
+}
+
 
 def fetch_jakarta_commodity_by_cities(city_id: int, year_month: str = "2025-11") -> pd.DataFrame | None:
     api = f"https://infopangan.jakarta.go.id/api2/v1/public/report?filterBy=city&Id={city_id}&yearMonth={year_month}"
@@ -21,7 +31,7 @@ def fetch_jakarta_commodity_by_cities(city_id: int, year_month: str = "2025-11")
     city_name = CITIES_MAP.get(city_id, f"ID {city_id} (Unknown)")
     print(f"Fetch data from {api}")
     try:
-        response = requests.get(api)
+        response = requests.get(api, headers=HEADERS, verify=False, timeout=5,impersonate="chrome120")
         response.raise_for_status()
 
         try:
@@ -49,7 +59,7 @@ def fetch_jakarta_commodity_by_cities(city_id: int, year_month: str = "2025-11")
         )
         data.rename(
             columns={
-                "value":  "daily_price",
+                "value": "daily_price",
                 "time": "date",
             }
         )
@@ -59,6 +69,7 @@ def fetch_jakarta_commodity_by_cities(city_id: int, year_month: str = "2025-11")
     except Exception as e:
         print(f"{e}")
     return None
+
 
 def fetch_all_cities_data(cities: dict, year_month: str = "2025-11") -> pd.DataFrame:
     all_data = []
@@ -72,6 +83,7 @@ def fetch_all_cities_data(cities: dict, year_month: str = "2025-11") -> pd.DataF
             print(f"Could not retrieve data for {city_name}")
         else:
             print(f"Data was empty for {city_name}")
+        time.sleep(1)
 
     if all_data:
         final_df = pd.concat(all_data, ignore_index=True)
@@ -82,7 +94,8 @@ def fetch_all_cities_data(cities: dict, year_month: str = "2025-11") -> pd.DataF
         return pd.DataFrame()
     pass
 
-def fetch_all_month_data(year: int, cities: dict)-> pd.DataFrame:
+
+def fetch_all_month_data(year: int, cities: dict) -> pd.DataFrame:
     all_yearly_data = []
 
     for month in range(1, 13):
@@ -108,6 +121,21 @@ def fetch_all_month_data(year: int, cities: dict)-> pd.DataFrame:
 
 if __name__ == "__main__":
     target_month = "2025-11"
-    target_year = 2024
-    combined_df = fetch_all_month_data(target_year, CITIES_MAP)
-    combined_df.to_csv("cities_2025.csv", index=False)
+    target_year_2024 = 2024
+    target_year_2025 = 2025
+    combined_df_2024 = fetch_all_month_data(target_year_2024, CITIES_MAP)
+    # combined_df_2024.to_csv("cities_2024.csv", index=False)
+    combined_df_2025 = fetch_all_month_data(target_year_2025, CITIES_MAP)
+    dfs_to_concat = []
+    if not combined_df_2024.empty:
+        dfs_to_concat.append(combined_df_2024)
+    if not combined_df_2025.empty:
+        dfs_to_concat.append(combined_df_2025)
+
+    if dfs_to_concat:
+        combined_df = pd.concat(dfs_to_concat, ignore_index=True)
+        filename = "jakarta_commodity_2024_2025.csv"
+        combined_df.to_csv(filename, index=False)
+        print(f"\nSUCCESS: Saved {len(combined_df)} records to {filename}")
+    else:
+        print("\nFAILED: No data collected.")
