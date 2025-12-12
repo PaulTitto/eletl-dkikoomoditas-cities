@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: dbt_jktcommodity_cities
+    database: dbt_jktcommodity_cities
+    schema: public
+    tables:
+      - name: commodity

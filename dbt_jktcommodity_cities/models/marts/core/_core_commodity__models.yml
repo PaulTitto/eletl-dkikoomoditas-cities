@@ -1,0 +1,8 @@
+version: 2
+
+models:
+  - name: dim_commodity
+    description: "Dimension table for commodity"
+    columns:
+      - name: sk_commodity_id
+        description: "Surrogate Key for commodity_id"

@@ -1,0 +1,9 @@
+packages:
+  - package: calogica/dbt_date # or u can use for dbt_date with godatadriven/dbt_date
+    version: 0.10.0
+  - package: dbt-labs/dbt_utils
+    version: 1.1.1
+  - package: calogica/dbt_expectations
+    version: 0.10.3
+  - package: Snowflake-Labs/dbt_constraints
+    version: [">=0.6.0", "<0.7.0"]

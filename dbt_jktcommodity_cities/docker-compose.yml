@@ -1,0 +1,15 @@
+version: '3'
+
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: dbt_jktcommodity_cities
+    environment:
+      POSTGRES_DB: dbt_jktcommodity_cities
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./data:/docker-entrypoint-initdb.d
